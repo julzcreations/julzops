@@ -1,0 +1,70 @@
+// JulzOps data model. Lives here in Phase 1 as types-only; no migrations run
+// until Phase 2 provisions Neon.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  repoUrl     String?
+  color       String?
+  createdAt   DateTime @default(now())
+
+  events      Event[]
+  costSamples CostSample[]
+}
+
+model Event {
+  id         String    @id @default(cuid())
+  projectId  String
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  source     String
+  kind       String
+  status     String
+  title      String
+  url        String?
+  metadata   Json?
+  startedAt  DateTime
+  endedAt    DateTime?
+  durationMs Int?
+  createdAt  DateTime  @default(now())
+
+  @@index([projectId, startedAt])
+  @@index([source, kind])
+  @@index([status, startedAt])
+}
+
+model CostSample {
+  id           String   @id @default(cuid())
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  source       String
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  cacheReadTokens   Int @default(0)
+  cacheWriteTokens  Int @default(0)
+  costUsd      Decimal  @db.Decimal(10, 6)
+  sampledAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([projectId, sampledAt])
+  @@index([source, model, sampledAt])
+}
+
+model Retro {
+  id          String   @id @default(cuid())
+  weekStart   DateTime @unique
+  markdown    String   @db.Text
+  highlights  Json?
+  generatedAt DateTime @default(now())
+}
