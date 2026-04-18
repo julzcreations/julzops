@@ -4,7 +4,7 @@ import { Providers } from '@/components/Providers'
 
 export const metadata: Metadata = {
   title: 'JulzOps',
-  description: 'cozy ops dashboard for Julie\u2019s automations',
+  description: 'Cozy ops dashboard for Julie\u2019s automations',
 }
 
 export default function RootLayout({
