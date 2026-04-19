@@ -59,53 +59,60 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'missing_required_fields' }, { status: 400 })
   }
 
-  const project = await prisma.project.findUnique({ where: { slug: body.projectSlug } })
-  if (!project) {
-    return NextResponse.json({ error: 'unknown_project', slug: body.projectSlug }, { status: 404 })
-  }
+  try {
+    const project = await prisma.project.findUnique({ where: { slug: body.projectSlug } })
+    if (!project) {
+      return NextResponse.json({ error: 'unknown_project', slug: body.projectSlug }, { status: 404 })
+    }
 
-  const startedAt = new Date(body.startedAt)
-  const endedAt = body.endedAt ? new Date(body.endedAt) : null
+    const startedAt = new Date(body.startedAt)
+    const endedAt = body.endedAt ? new Date(body.endedAt) : null
 
-  // One CostSample per model used + one Event summarizing the run.
-  const costRows = Object.entries(body.usage.byModel).map(([model, u]) => ({
-    projectId: project.id,
-    source: body.source,
-    model,
-    inputTokens: u.inputTokens,
-    outputTokens: u.outputTokens,
-    cacheReadTokens: u.cacheReadTokens ?? 0,
-    cacheWriteTokens: u.cacheWriteTokens ?? 0,
-    costUsd: u.costUsd,
-    sampledAt: startedAt,
-  }))
+    // One CostSample per model used + one Event summarizing the run.
+    const costRows = Object.entries(body.usage.byModel).map(([model, u]) => ({
+      projectId: project.id,
+      source: body.source,
+      model,
+      inputTokens: u.inputTokens,
+      outputTokens: u.outputTokens,
+      cacheReadTokens: u.cacheReadTokens ?? 0,
+      cacheWriteTokens: u.cacheWriteTokens ?? 0,
+      costUsd: u.costUsd,
+      sampledAt: startedAt,
+    }))
 
-  const [costs, event] = await prisma.$transaction([
-    prisma.costSample.createMany({ data: costRows }),
-    prisma.event.create({
-      data: {
-        projectId: project.id,
-        source: body.source,
-        kind: 'workflow_run',
-        status: body.status,
-        title: body.workflowTitle,
-        url: body.runUrl ?? null,
-        metadata: {
-          ...body.metadata,
-          totalCostUsd: body.usage.totalUsd,
-          modelsUsed: Object.keys(body.usage.byModel),
+    const [costs, event] = await prisma.$transaction([
+      prisma.costSample.createMany({ data: costRows }),
+      prisma.event.create({
+        data: {
+          projectId: project.id,
+          source: body.source,
+          kind: 'workflow_run',
+          status: body.status,
+          title: body.workflowTitle,
+          url: body.runUrl ?? null,
+          metadata: {
+            ...body.metadata,
+            totalCostUsd: body.usage.totalUsd,
+            modelsUsed: Object.keys(body.usage.byModel),
+          },
+          startedAt,
+          endedAt,
+          durationMs: body.durationMs ?? null,
         },
-        startedAt,
-        endedAt,
-        durationMs: body.durationMs ?? null,
-      },
-    }),
-  ])
+      }),
+    ])
 
-  return NextResponse.json({
-    ok: true,
-    eventId: event.id,
-    costSamplesInserted: costs.count,
-    totalUsd: body.usage.totalUsd,
-  })
+    return NextResponse.json({
+      ok: true,
+      eventId: event.id,
+      costSamplesInserted: costs.count,
+      totalUsd: body.usage.totalUsd,
+    })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    const name = e instanceof Error ? e.name : 'unknown'
+    console.error('[ingest/cost] error', { name, msg })
+    return NextResponse.json({ error: 'internal_error', name, message: msg }, { status: 500 })
+  }
 }
