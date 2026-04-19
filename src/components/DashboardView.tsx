@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { signOut } from 'next-auth/react'
 import {
   SignOut,
@@ -11,6 +12,7 @@ import {
   XCircle,
   Circle,
   Clock,
+  Gear,
 } from '@phosphor-icons/react'
 import { formatUsd, formatDuration, formatRelative } from '@/lib/format'
 
@@ -59,6 +61,15 @@ export function DashboardView({
         </div>
         <div className="flex items-center gap-4 text-sm text-purple-700/70">
           <span className="hidden md:inline font-mono text-xs text-pink-700">{userEmail}</span>
+          <Link
+            href="/settings"
+            className="flex items-center gap-2 hover:text-pink-600 transition-colors"
+            aria-label="Settings"
+            title="Settings"
+          >
+            <Gear size={16} />
+            <span className="hidden md:inline">Settings</span>
+          </Link>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
             className="flex items-center gap-2 hover:text-pink-600 transition-colors"
