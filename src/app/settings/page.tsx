@@ -17,7 +17,7 @@ type LinkedApp = {
 const linkedApps: LinkedApp[] = [
   {
     name: 'SubTracker',
-    url: 'https://julzcreations.dev',
+    url: 'https://subs.julzcreations.dev',
     description: 'Flat recurring subscriptions — Notion, Figma, streaming, anything with a monthly charge.',
     icon: <Receipt weight="duotone" size={28} />,
     accentClass: 'from-pink-400 to-purple-500',
