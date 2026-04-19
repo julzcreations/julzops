@@ -15,6 +15,7 @@ import {
   Gear,
 } from '@phosphor-icons/react'
 import { formatUsd, formatDuration, formatRelative } from '@/lib/format'
+import { SwirlSeriesCard, type SwirlEvent } from '@/components/SwirlSeriesCard'
 
 type EventRow = {
   id: string
@@ -29,6 +30,15 @@ type EventRow = {
   project: { name: string; slug: string; color: string | null }
 }
 
+type SwirlSection = {
+  schedule: string
+  nextRunLabel: string
+  nextRunAtIso: string
+  lastSync: SwirlEvent | null
+  recentEvents: SwirlEvent[]
+  posted30dCount: number
+}
+
 type Props = {
   userEmail: string | null
   runningCount: number
@@ -36,6 +46,7 @@ type Props = {
   budgetCeilingUsd: number
   todayEventCount: number
   events: EventRow[]
+  swirl: SwirlSection
 }
 
 export function DashboardView({
@@ -45,6 +56,7 @@ export function DashboardView({
   budgetCeilingUsd,
   todayEventCount,
   events,
+  swirl,
 }: Props) {
   const spendPct = Math.min(100, (todaySpendUsd / budgetCeilingUsd) * 100)
   const spendHint =
@@ -100,6 +112,15 @@ export function DashboardView({
           hint={todayEventCount === 0 ? 'No activity yet' : 'Since 00:00 UTC'}
         />
       </section>
+
+      <SwirlSeriesCard
+        schedule={swirl.schedule}
+        nextRunLabel={swirl.nextRunLabel}
+        nextRunAtIso={swirl.nextRunAtIso}
+        lastSync={swirl.lastSync}
+        recentEvents={swirl.recentEvents}
+        posted30dCount={swirl.posted30dCount}
+      />
 
       <section className="rounded-3xl bg-white/60 backdrop-blur-sm shadow-card border border-pink-100 overflow-hidden">
         <div className="px-6 md:px-8 py-5 border-b border-pink-100">
