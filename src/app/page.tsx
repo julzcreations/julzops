@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { SignInCard } from '@/components/SignInCard'
 import { DashboardView } from '@/components/DashboardView'
 import { startOfTodayUTC } from '@/lib/format'
+import { buildBudgetStatus, getMtdTotals, startOfMonthUTC } from '@/lib/analytics'
 import {
   SCHEDULE_LABEL,
   SWIRL_PROJECT_SLUG,
@@ -18,6 +19,7 @@ export default async function Home() {
   if (!session) return <SignInCard />
 
   const today = startOfTodayUTC()
+  const monthStart = startOfMonthUTC()
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
   // Resolve the swirl-series project so we can scope queries to it.
@@ -31,6 +33,7 @@ export default async function Home() {
     runningCount,
     todaySpendAgg,
     todayEventCount,
+    mtdTotals,
     recentEvents,
     swirlRecentEvents,
     swirlLastSync,
@@ -42,6 +45,7 @@ export default async function Home() {
       where: { sampledAt: { gte: today } },
     }),
     prisma.event.count({ where: { startedAt: { gte: today } } }),
+    getMtdTotals(monthStart),
     prisma.event.findMany({
       take: 20,
       orderBy: { startedAt: 'desc' },
@@ -76,6 +80,7 @@ export default async function Home() {
 
   const todaySpendUsd = todaySpendAgg._sum.costUsd ? Number(todaySpendAgg._sum.costUsd) : 0
   const budgetCeilingUsd = 100
+  const budget = buildBudgetStatus(mtdTotals.costUsd, budgetCeilingUsd)
 
   const now = new Date()
   const next = nextSwirlRun(now)
@@ -86,6 +91,7 @@ export default async function Home() {
       runningCount={runningCount}
       todaySpendUsd={todaySpendUsd}
       budgetCeilingUsd={budgetCeilingUsd}
+      budget={budget}
       todayEventCount={todayEventCount}
       events={recentEvents.map((e) => ({
         id: e.id,

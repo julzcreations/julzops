@@ -16,6 +16,9 @@ import {
 } from '@phosphor-icons/react'
 import { formatUsd, formatDuration, formatRelative } from '@/lib/format'
 import { SwirlSeriesCard, type SwirlEvent } from '@/components/SwirlSeriesCard'
+import { BudgetRemainingTile } from '@/components/BudgetRemainingTile'
+import { NavTabs } from '@/components/NavTabs'
+import type { BudgetStatus } from '@/lib/analytics'
 
 type EventRow = {
   id: string
@@ -44,6 +47,7 @@ type Props = {
   runningCount: number
   todaySpendUsd: number
   budgetCeilingUsd: number
+  budget: BudgetStatus
   todayEventCount: number
   events: EventRow[]
   swirl: SwirlSection
@@ -54,6 +58,7 @@ export function DashboardView({
   runningCount,
   todaySpendUsd,
   budgetCeilingUsd,
+  budget,
   todayEventCount,
   events,
   swirl,
@@ -92,7 +97,9 @@ export function DashboardView({
         </div>
       </header>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+      <NavTabs />
+
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         <Tile
           icon={<Heartbeat weight="duotone" size={22} />}
           label="Running now"
@@ -111,6 +118,7 @@ export function DashboardView({
           value={todayEventCount.toString()}
           hint={todayEventCount === 0 ? 'No activity yet' : 'Since 00:00 UTC'}
         />
+        <BudgetRemainingTile budget={budget} />
       </section>
 
       <SwirlSeriesCard

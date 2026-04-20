@@ -20,6 +20,16 @@ export function formatDuration(ms: number | null | undefined): string {
   return `${m}m ${s}s`
 }
 
+export function formatTokens(n: number): string {
+  if (n < 1000) return n.toString()
+  if (n < 1_000_000) return `${(n / 1000).toFixed(n < 10_000 ? 1 : 0)}K`
+  return `${(n / 1_000_000).toFixed(n < 10_000_000 ? 2 : 1)}M`
+}
+
+export function formatPct(ratio: number, digits = 0): string {
+  return `${(ratio * 100).toFixed(digits)}%`
+}
+
 const relative = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
 
 export function formatRelative(d: Date): string {
