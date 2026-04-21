@@ -42,8 +42,8 @@ export default async function UsagePage() {
 
   return (
     <PageShell
-      title="Usage"
-      subtitle={`Month to date · ${monthLabel}`}
+      title="API usage"
+      subtitle={`Month to date · ${monthLabel} · From instrumented scripts`}
       userEmail={session.user?.email ?? null}
     >
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

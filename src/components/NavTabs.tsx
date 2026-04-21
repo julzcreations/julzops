@@ -18,8 +18,8 @@ type Tab = {
 
 const tabs: Tab[] = [
   { href: '/', label: 'Today', icon: <House weight="duotone" size={18} /> },
-  { href: '/costs', label: 'Cost', icon: <Coffee weight="duotone" size={18} />, matchPrefix: true },
-  { href: '/usage', label: 'Usage', icon: <ChartBar weight="duotone" size={18} />, matchPrefix: true },
+  { href: '/costs', label: 'API cost', icon: <Coffee weight="duotone" size={18} />, matchPrefix: true },
+  { href: '/usage', label: 'API usage', icon: <ChartBar weight="duotone" size={18} />, matchPrefix: true },
   { href: '/logs', label: 'Logs', icon: <ListDashes weight="duotone" size={18} />, matchPrefix: true },
 ]
 

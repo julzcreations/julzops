@@ -45,7 +45,11 @@ export default async function CostsPage() {
   const monthLabel = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
   return (
-    <PageShell title="Cost" subtitle={`Month to date · ${monthLabel}`} userEmail={session.user?.email ?? null}>
+    <PageShell
+      title="API cost"
+      subtitle={`Month to date · ${monthLabel} · From instrumented scripts`}
+      userEmail={session.user?.email ?? null}
+    >
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <HeroTile
           icon={<Coffee weight="duotone" size={22} />}

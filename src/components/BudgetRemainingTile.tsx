@@ -28,7 +28,7 @@ export function BudgetRemainingTile({ budget }: Props) {
       <div className="flex items-center justify-between text-purple-600 text-sm mb-3">
         <div className="flex items-center gap-2">
           <Wallet weight="duotone" size={22} />
-          <span className="uppercase tracking-wide text-xs">Budget left</span>
+          <span className="uppercase tracking-wide text-xs">API budget left</span>
         </div>
         <ArrowRight
           size={14}
@@ -37,7 +37,7 @@ export function BudgetRemainingTile({ budget }: Props) {
       </div>
       <div className="font-display text-3xl text-purple-900 mb-1">{formatUsd(remainingUsd)}</div>
       <div className="text-xs text-purple-600/60 mb-3">
-        {pctRemaining.toFixed(0)}% of {formatUsd(ceilingUsd)} left
+        {pctRemaining.toFixed(0)}% of {formatUsd(ceilingUsd)} ceiling left
       </div>
       <div className="h-1.5 rounded-full bg-pink-100 overflow-hidden">
         <div
