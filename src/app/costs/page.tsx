@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { Coffee, MagnifyingGlass, Code, ClockCountdown } from '@phosphor-icons/react/dist/ssr'
 import { authOptions } from '@/lib/auth'
 import {
+  BUDGET_CEILING_USD,
   buildBudgetStatus,
   getDailyBuckets,
   getModelBreakdown,
@@ -18,8 +19,6 @@ import { formatUsd } from '@/lib/format'
 import { sortModels } from '@/lib/models'
 
 export const dynamic = 'force-dynamic'
-
-const BUDGET_CEILING_USD = 100
 
 export default async function CostsPage() {
   const session = await getServerSession(authOptions)

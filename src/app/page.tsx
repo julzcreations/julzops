@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { SignInCard } from '@/components/SignInCard'
 import { DashboardView } from '@/components/DashboardView'
 import { startOfTodayUTC } from '@/lib/format'
-import { buildBudgetStatus, getMtdTotals, startOfMonthUTC } from '@/lib/analytics'
+import { BUDGET_CEILING_USD, buildBudgetStatus, getMtdTotals, startOfMonthUTC } from '@/lib/analytics'
 import {
   SCHEDULE_LABEL,
   SWIRL_PROJECT_SLUG,
@@ -79,7 +79,7 @@ export default async function Home() {
   ])
 
   const todaySpendUsd = todaySpendAgg._sum.costUsd ? Number(todaySpendAgg._sum.costUsd) : 0
-  const budgetCeilingUsd = 100
+  const budgetCeilingUsd = BUDGET_CEILING_USD
   const budget = buildBudgetStatus(mtdTotals.costUsd, budgetCeilingUsd)
 
   const now = new Date()

@@ -5,6 +5,10 @@
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
+// Single source of truth for Julie's self-imposed API credit ceiling.
+// Override via JULZOPS_API_BUDGET_USD env var when the top-up size changes.
+export const BUDGET_CEILING_USD = Number(process.env.JULZOPS_API_BUDGET_USD ?? 25)
+
 export function startOfMonthUTC(d = new Date()): Date {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1))
 }
