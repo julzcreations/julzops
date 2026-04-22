@@ -16,7 +16,7 @@ export const runtime = 'nodejs'
 
 const COST_REPORT_URL = 'https://api.anthropic.com/v1/organizations/cost_report'
 const ANTHROPIC_API_VERSION = '2023-06-01'
-const USER_AGENT = 'JulzOps/1.0.0 (ops.julzcreations.dev)'
+const USER_AGENT = 'JulzOps/1.0.0 (+https://github.com/jw-yue/julzops)'
 // Sentinel written in place of null Anthropic workspace_id so the composite PK
 // (costDate, workspaceId, description) can dedupe default-workspace rows.
 // (Postgres would otherwise treat NULL as distinct in a unique constraint,
