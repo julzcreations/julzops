@@ -37,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           response=$(curl -fsS -w "\n%{http_code}" \
-            -X GET "https://ops.julzcreations.dev/api/jobs/reconcile-usage" \
+            -X GET "https://ops.julzcreations.com/api/jobs/reconcile-usage" \
             -H "Authorization: Bearer ${CRON_SECRET}")
           body=$(echo "$response" | head -n -1)
           status=$(echo "$response" | tail -n 1)
