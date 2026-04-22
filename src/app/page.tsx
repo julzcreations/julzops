@@ -4,7 +4,13 @@ import { prisma } from '@/lib/prisma'
 import { SignInCard } from '@/components/SignInCard'
 import { DashboardView } from '@/components/DashboardView'
 import { startOfTodayUTC } from '@/lib/format'
-import { BUDGET_CEILING_USD, buildBudgetStatus, getMtdTotals, startOfMonthUTC } from '@/lib/analytics'
+import {
+  BUDGET_CEILING_USD,
+  buildBudgetStatus,
+  getAnthropicMtdForProject,
+  getAnthropicMtdTotal,
+  startOfMonthUTC,
+} from '@/lib/analytics'
 import {
   SCHEDULE_LABEL,
   SWIRL_PROJECT_SLUG,
@@ -31,21 +37,25 @@ export default async function Home() {
 
   const [
     runningCount,
-    todaySpendAgg,
+    // Today's spend comes from AnthropicCost via the hourly Cost API pull.
+    // Passing today-UTC as the range start reuses the MTD helper to mean
+    // "sum from today 00:00 UTC to now" — same math, narrower window.
+    todaySpendUsd,
     todayEventCount,
-    mtdTotals,
+    // Month-to-date total drives the budget gauge. Authoritative from Anthropic.
+    anthropicMtdUsd,
+    // Swirl-specific MTD cost — resolves Swirlie workspace via Project.anthropicWorkspaceId.
+    swirlMtdCostUsd,
     recentEvents,
     swirlRecentEvents,
     swirlLastSync,
     swirlPosted30dCount,
   ] = await Promise.all([
     prisma.event.count({ where: { status: 'running' } }),
-    prisma.costSample.aggregate({
-      _sum: { costUsd: true },
-      where: { sampledAt: { gte: today } },
-    }),
+    getAnthropicMtdTotal(today),
     prisma.event.count({ where: { startedAt: { gte: today } } }),
-    getMtdTotals(monthStart),
+    getAnthropicMtdTotal(monthStart),
+    getAnthropicMtdForProject(SWIRL_PROJECT_SLUG, monthStart),
     prisma.event.findMany({
       take: 20,
       orderBy: { startedAt: 'desc' },
@@ -78,9 +88,8 @@ export default async function Home() {
       : Promise.resolve(0),
   ])
 
-  const todaySpendUsd = todaySpendAgg._sum.costUsd ? Number(todaySpendAgg._sum.costUsd) : 0
   const budgetCeilingUsd = BUDGET_CEILING_USD
-  const budget = buildBudgetStatus(mtdTotals.costUsd, budgetCeilingUsd)
+  const budget = buildBudgetStatus(anthropicMtdUsd, budgetCeilingUsd)
 
   const now = new Date()
   const next = nextSwirlRun(now)
@@ -128,6 +137,7 @@ export default async function Home() {
           metadata: e.metadata as Record<string, unknown> | null,
         })),
         posted30dCount: swirlPosted30dCount,
+        mtdCostUsd: swirlMtdCostUsd,
       }}
     />
   )

@@ -29,6 +29,8 @@ type Props = {
   lastSync: SwirlEvent | null
   recentEvents: SwirlEvent[]
   posted30dCount: number
+  /** Month-to-date cost for the Swirlie workspace from the Anthropic Cost API. */
+  mtdCostUsd: number
 }
 
 export function SwirlSeriesCard({
@@ -38,6 +40,7 @@ export function SwirlSeriesCard({
   lastSync,
   recentEvents,
   posted30dCount,
+  mtdCostUsd,
 }: Props) {
   const lastSyncMeta = (lastSync?.metadata ?? {}) as Record<string, unknown>
   const reconciled = countMetadata(lastSyncMeta, [
@@ -97,13 +100,9 @@ export function SwirlSeriesCard({
         />
         <SmallTile
           icon={<Sparkle size={18} weight="duotone" className="text-pink-500" />}
-          label="Last run cost"
-          value={
-            typeof lastSyncMeta.totalCostUsd === 'number'
-              ? formatUsd(lastSyncMeta.totalCostUsd as number)
-              : '—'
-          }
-          hint="Anthropic API"
+          label="MTD cost"
+          value={formatUsd(mtdCostUsd)}
+          hint="Anthropic API, month-to-date"
         />
       </div>
 

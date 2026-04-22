@@ -1,0 +1,49 @@
+name: Anthropic Cost Sync
+
+# Hourly trigger for the JulzOps /api/jobs/reconcile-usage route, which pulls
+# the current month's per-workspace cost breakdown from Anthropic's Cost API
+# and upserts it into the AnthropicCost table. The actual fetch + upsert logic
+# lives in the Next.js route so it's testable via curl; this workflow is just
+# a free cron scheduler (Vercel Hobby plan caps Vercel crons at 2/day).
+#
+# Secrets required:
+#   CRON_SECRET  - same value as the JulzOps Vercel env var, Bearer-auth's the route
+#
+# Manual dispatch:
+#   gh workflow run anthropic-cost-sync.yml -R jw-yue/julzops
+
+on:
+  schedule:
+    # Hourly at :07 past the hour, offset from the top to avoid contending
+    # with other crons (GHA runs on shared infra and spreading load helps
+    # latency). UTC.
+    - cron: '7 * * * *'
+  workflow_dispatch:
+
+# Never run two syncs at once — the route is idempotent via upsert, but
+# concurrent DB writes against the same composite PK would just waste effort.
+concurrency:
+  group: anthropic-cost-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger reconcile-usage on JulzOps
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -w "\n%{http_code}" \
+            -X GET "https://ops.julzcreations.dev/api/jobs/reconcile-usage" \
+            -H "Authorization: Bearer ${CRON_SECRET}")
+          body=$(echo "$response" | head -n -1)
+          status=$(echo "$response" | tail -n 1)
+          echo "status=$status"
+          echo "body=$body"
+          if [ "$status" != "200" ]; then
+            echo "::error::reconcile-usage returned non-200: $status"
+            exit 1
+          fi

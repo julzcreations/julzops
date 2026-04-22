@@ -377,3 +377,135 @@ export async function getAllKnownModels(from: Date): Promise<string[]> {
   })
   return rows.map((r) => r.model)
 }
+
+// ---------------------------------------------------------------------------
+// Anthropic Cost API queries.
+//
+// Data source: AnthropicCost table, populated by the hourly cron at
+// /api/jobs/reconcile-usage pulling from /v1/organizations/cost_report.
+// This is the authoritative cost source (per-workspace dollar values from
+// Anthropic directly). CostSample (above) is the legacy push-based source
+// and is retained for historical data / RunLogRow per-run attribution until
+// workers stop POSTing (see plan: yes-and-i-have-resilient-meerkat.md).
+// ---------------------------------------------------------------------------
+
+// Sentinel value written in AnthropicCost.workspaceId for rows where Anthropic
+// returned null (the "default workspace"). Mirrored in the route handler.
+export const DEFAULT_WORKSPACE_SENTINEL = 'default'
+
+export async function getAnthropicMtdTotal(monthStart = startOfMonthUTC()): Promise<number> {
+  const agg = await prisma.anthropicCost.aggregate({
+    _sum: { costUsd: true },
+    where: { costDate: { gte: monthStart } },
+  })
+  return Number(agg._sum.costUsd ?? 0)
+}
+
+export type AnthropicWorkspaceBreakdown = {
+  workspaceId: string              // "default" sentinel for rows with no workspace
+  projectSlug: string | null       // null if no JulzOps Project maps to this workspace
+  projectName: string | null
+  projectColor: string | null
+  costUsd: number
+}
+
+// MTD cost broken down by workspace, joined to Project via anthropicWorkspaceId
+// so cards can render project names/colors. Workspaces without a mapped Project
+// appear with null project fields — useful for spotting orphan spend.
+export async function getAnthropicMtdByWorkspace(
+  monthStart = startOfMonthUTC(),
+): Promise<AnthropicWorkspaceBreakdown[]> {
+  const grouped = await prisma.anthropicCost.groupBy({
+    by: ['workspaceId'],
+    _sum: { costUsd: true },
+    where: { costDate: { gte: monthStart } },
+  })
+
+  const workspaceIds = grouped.map((g) => g.workspaceId)
+  const projects = await prisma.project.findMany({
+    where: { anthropicWorkspaceId: { in: workspaceIds } },
+    select: { slug: true, name: true, color: true, anthropicWorkspaceId: true },
+  })
+  const byWorkspace = new Map(
+    projects.map((p) => [p.anthropicWorkspaceId as string, p]),
+  )
+
+  return grouped
+    .map((g) => {
+      const proj = byWorkspace.get(g.workspaceId)
+      return {
+        workspaceId: g.workspaceId,
+        projectSlug: proj?.slug ?? null,
+        projectName: proj?.name ?? null,
+        projectColor: proj?.color ?? null,
+        costUsd: Number(g._sum.costUsd ?? 0),
+      }
+    })
+    .sort((a, b) => b.costUsd - a.costUsd)
+}
+
+// MTD cost for one specific workspace (resolved via Project.slug). Returns 0
+// when the project has no anthropicWorkspaceId mapping or no rows yet. Used by
+// project cards (e.g. SwirlSeriesCard) to render a single $ value.
+export async function getAnthropicMtdForProject(
+  projectSlug: string,
+  monthStart = startOfMonthUTC(),
+): Promise<number> {
+  const project = await prisma.project.findUnique({
+    where: { slug: projectSlug },
+    select: { anthropicWorkspaceId: true },
+  })
+  if (!project?.anthropicWorkspaceId) return 0
+
+  const agg = await prisma.anthropicCost.aggregate({
+    _sum: { costUsd: true },
+    where: {
+      costDate: { gte: monthStart },
+      workspaceId: project.anthropicWorkspaceId,
+    },
+  })
+  return Number(agg._sum.costUsd ?? 0)
+}
+
+export type AnthropicDailyBucket = {
+  day: string                                   // YYYY-MM-DD (UTC)
+  costUsd: number
+  byWorkspace: Record<string, number>           // workspaceId → dollars
+}
+
+// Daily series from `from` through today (inclusive), with zero-filled gaps
+// so the chart has a continuous x-axis. Each bucket carries per-workspace
+// dollar amounts so the caller can render a stacked bar.
+export async function getAnthropicDailySeries(
+  from: Date,
+  now = new Date(),
+): Promise<AnthropicDailyBucket[]> {
+  const rows = await prisma.anthropicCost.findMany({
+    where: { costDate: { gte: from } },
+    select: { costDate: true, workspaceId: true, costUsd: true },
+  })
+
+  const buckets = new Map<string, AnthropicDailyBucket>()
+  const cursor = new Date(
+    Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()),
+  )
+  const endInclusive = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  )
+  while (cursor <= endInclusive) {
+    const key = toDayKey(cursor)
+    buckets.set(key, { day: key, costUsd: 0, byWorkspace: {} })
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+  }
+
+  for (const row of rows) {
+    const key = toDayKey(row.costDate)
+    const b = buckets.get(key)
+    if (!b) continue
+    const cost = Number(row.costUsd)
+    b.costUsd += cost
+    b.byWorkspace[row.workspaceId] = (b.byWorkspace[row.workspaceId] ?? 0) + cost
+  }
+
+  return Array.from(buckets.values()).sort((a, b) => (a.day < b.day ? -1 : 1))
+}

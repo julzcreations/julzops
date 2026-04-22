@@ -40,6 +40,7 @@ type SwirlSection = {
   lastSync: SwirlEvent | null
   recentEvents: SwirlEvent[]
   posted30dCount: number
+  mtdCostUsd: number
 }
 
 type Props = {
@@ -128,6 +129,7 @@ export function DashboardView({
         lastSync={swirl.lastSync}
         recentEvents={swirl.recentEvents}
         posted30dCount={swirl.posted30dCount}
+        mtdCostUsd={swirl.mtdCostUsd}
       />
 
       <section className="rounded-3xl bg-white/60 backdrop-blur-sm shadow-card border border-pink-100 overflow-hidden">

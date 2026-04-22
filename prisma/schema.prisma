@@ -12,13 +12,17 @@ datasource db {
 }
 
 model Project {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  description String?
-  repoUrl     String?
-  color       String?
-  createdAt   DateTime @default(now())
+  id                   String   @id @default(cuid())
+  slug                 String   @unique
+  name                 String
+  description          String?
+  repoUrl              String?
+  color                String?
+  // Maps this Project to an Anthropic API workspace (wrkspc_...). Populated
+  // manually once per project so we can attribute per-workspace Cost API rows
+  // back to the right card on the dashboard. Null = no API usage tracked.
+  anthropicWorkspaceId String?  @unique
+  createdAt            DateTime @default(now())
 
   events      Event[]
   costSamples CostSample[]
@@ -68,4 +72,29 @@ model Retro {
   markdown    String   @db.Text
   highlights  Json?
   generatedAt DateTime @default(now())
+}
+
+// Per-day, per-workspace, per-description cost snapshot pulled from the
+// Anthropic Cost API (/v1/organizations/cost_report). The hourly cron upserts
+// today's row on every pull (costDate is a DATE, not a timestamp, so multiple
+// pulls on the same UTC day collapse to one row per workspace+description).
+// Past days become immutable ~5 min after UTC rollover (Anthropic data
+// freshness window). description is the model+token-type label Anthropic
+// returns, e.g. "claude-opus-4-6 input tokens (standard)".
+//
+// workspaceId is non-null: the Cost API returns null for default-workspace
+// rows, but we coerce those to the sentinel string "default" at write time so
+// the composite primary key deduplicates correctly. (Postgres treats NULL as
+// distinct in unique constraints by default, which would otherwise cause
+// hourly re-inserts instead of upserts on the default-workspace row.)
+model AnthropicCost {
+  costDate    DateTime @db.Date
+  workspaceId String   // "default" sentinel for null Anthropic workspace_id
+  description String
+  costUsd     Decimal  @db.Decimal(10, 6)
+  pulledAt    DateTime @default(now())
+
+  @@id([costDate, workspaceId, description])
+  @@index([costDate])
+  @@index([workspaceId, costDate])
 }
