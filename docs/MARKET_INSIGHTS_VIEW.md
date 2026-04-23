@@ -39,18 +39,19 @@ One row per enabled topic. Sort by `$/mo desc` by default.
 | $/mo (actual, MTD) | Sum of `CostSample` MTD for this project | Compare column |
 | Last run status | Latest `Event` for this project | ✓ / ✗ / ⏳ |
 
-**Example rendering** (this is what it should look like — data as of plan write date):
+**Example rendering** (this is what it should look like — data as of plan write date, v5):
 
 | Topic | Slug | Model | Cadence | Runs/mo | $/run | **$/mo proj** | $/mo MTD |
 |---|---|---|---|---|---|---|---|
 | 🎯 Skills Radar | skills-radar | Sonnet | 2×/mo (1st + 15th) | 2 | $0.55 | **$1.10** | — |
-| 🧭 Creator Market Watch | creator-market-watch | Opus | Monthly, 1st Mon | 1 | $3.80 | **$3.80** | — |
+| 🔭 Creator Opportunity Radar | creator-opportunity-radar | Opus | Monthly, 1st Mon | 1 | $3.80 | **$3.80** | — |
 | 💼 AI Engineer Job Market | ai-engineer-job-market | Sonnet | Biweekly (1st + 3rd Mon) | 2.17 | $0.55 | **$1.19** | — |
 | 🛰️ Indie Intel | indie-intel-market-watch | Sonnet | Monthly, 1st Mon | 1 | $0.55 | **$0.55** | — |
 | ☕ Coffee Pain Watch | coffee-pain-watch | Opus | Monthly, 2nd Mon | 1 | $3.80 | **$3.80** | — |
 | 🧠 AI Developments | daily-ai-developments | Sonnet | Biweekly (2nd + 4th Mon) | 2.17 | $0.61 | **$1.32** | — |
-| 🔭 Opportunity Radar | opportunity-radar | Opus | Monthly, 3rd Mon | 1 | $3.80 | **$3.80** | — |
-| | | | | | **Total** | **~$15.56/mo** | |
+| | | | | | **Total** | **~$11.76/mo** | |
+
+*(Plus Swirl Series sync from a separate repo at ~$3.00/mo = ~$14.76/mo grand total across market-insights + swirl-series.)*
 
 **Totals strip** below the table: projected monthly burn, MTD actual, delta, % of credit ceiling consumed.
 
@@ -66,15 +67,15 @@ Show the next 4 Mondays (covering ~1 month ahead). One row per Monday. Columns =
 | Coverage status | Derived | "covered" / "light" / "empty" |
 | Total $ expected | Sum over topics × $/run | Optional — shows daily spend |
 
-**Example rendering** (May 2026):
+**Example rendering** (May 2026, v5):
 
 | Date | Week | Topics running | Coverage | $ expected |
 |---|---|---|---|---|
 | Fri 5/1 | W1 | 🎯 skills-radar | light | $0.55 |
-| Mon 5/4 | W1 | 🧭 creator-market-watch · 💼 ai-engineer-job-market · 🛰️ indie-intel | covered | $4.90 |
+| Mon 5/4 | W1 | 🔭 creator-opportunity-radar · 💼 ai-engineer-job-market · 🛰️ indie-intel | covered | $4.90 |
 | Mon 5/11 | W2 | ☕ coffee-pain-watch · 🧠 ai-developments | covered | $4.41 |
 | Thu 5/15 | W3 | 🎯 skills-radar | light | $0.55 |
-| Mon 5/18 | W3 | 🔭 opportunity-radar · 💼 ai-engineer-job-market | covered | $4.35 |
+| Mon 5/18 | W3 | 💼 ai-engineer-job-market | light | $0.55 |
 | Mon 5/25 | W4 | 🧠 ai-developments | light | $0.61 |
 
 **Coverage color coding:**
