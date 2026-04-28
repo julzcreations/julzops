@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ArrowSquareOut, Receipt, Sparkle } from '@phosphor-icons/react/dist/ssr'
+import { ArrowLeft, ArrowSquareOut, Binoculars, Receipt, Sparkle } from '@phosphor-icons/react/dist/ssr'
 import { authOptions } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
@@ -17,10 +17,17 @@ type LinkedApp = {
 const linkedApps: LinkedApp[] = [
   {
     name: 'SubTracker',
-    url: 'https://subs.julzcreations.dev',
+    url: 'https://subs.julzcreations.com',
     description: 'Flat recurring subscriptions — Notion, Figma, streaming, anything with a monthly charge.',
     icon: <Receipt weight="duotone" size={28} />,
     accentClass: 'from-pink-400 to-purple-500',
+  },
+  {
+    name: 'Market Insights',
+    url: 'https://insights.julzcreations.com',
+    description: 'Daily signal sweeps on market fit, competitors, and demand — starting with the Swirl Series thesis.',
+    icon: <Binoculars weight="duotone" size={28} />,
+    accentClass: 'from-purple-400 to-pink-500',
   },
 ]
 
@@ -48,7 +55,7 @@ export default async function SettingsPage() {
           <h2 className="font-display text-xl text-purple-900">Linked apps</h2>
         </div>
         <p className="text-sm text-purple-700/70 mb-6">
-          Other pieces of your stack that live at julzcreations.dev. Click through to jump between them.
+          Other pieces of your stack that live at julzcreations.com. Click through to jump between them.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {linkedApps.map((app) => (

@@ -1,6 +1,6 @@
 # JulzOps
 
-Cozy ops dashboard for Julie's automations. Lives at [ops.julzcreations.dev](https://ops.julzcreations.dev).
+Cozy ops dashboard for Julie's automations. Lives at [ops.julzcreations.com](https://ops.julzcreations.com).
 
 ## Stack
 

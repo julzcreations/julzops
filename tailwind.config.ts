@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 // Theme tokens mirror SubTracker's cozy pink/purple lo-fi palette.
-// Keep these in sync across julzcreations.dev properties.
+// Keep these in sync across julzcreations.com properties.
 const config: Config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',

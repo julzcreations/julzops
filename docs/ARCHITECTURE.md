@@ -10,7 +10,7 @@ One-sentence pitch: a single-user ops dashboard where my automations POST their 
  │  — runs on GitHub Actions    │     (bearer-authed)        │
  │  — at end of run, ships      │                            ▼
  │    summary + cost to JulzOps │             ┌─────────────────────────┐
- └──────────────────────────────┘             │ ops.julzcreations.dev   │
+ └──────────────────────────────┘             │ ops.julzcreations.com   │
                                               │  — Next.js 14 on Vercel │
                                               │  — API routes + UI      │
  ┌──────────────────────────────┐             │                         │
@@ -138,7 +138,7 @@ Not instrumented today. Anthropic publishes OpenTelemetry metrics for Claude Cod
 |---|---|
 | `DATABASE_URL` | Neon pooled connection (runtime queries) |
 | `DIRECT_URL` | Neon direct connection (Prisma migrations only) |
-| `NEXTAUTH_URL` | `https://ops.julzcreations.dev` (production only) |
+| `NEXTAUTH_URL` | `https://ops.julzcreations.com` (production only) |
 | `NEXTAUTH_SECRET` | JWT signing secret |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth |
 | `JULZOPS_INGEST_SECRET` | Bearer token sync.py uses to POST to `/api/ingest/cost` |
